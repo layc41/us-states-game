@@ -9,38 +9,36 @@ turtle.shape(image)
 NUMBER_OF_STATES = 50
 tim = turtle.Turtle()
 tim.hideturtle()
+states_data = pandas.read_csv("50_states.csv")
+LIST_OF_STATES = states_data.state.to_list()
 guesses = []
 
 
 def user_answer():
-    if len(guesses) == 0:
-        answer_state = screen.textinput(title="Guess the State", prompt="What's another state's name?")
-    else:
-        answer_state = screen.textinput(title=f"{len(guesses)} / {NUMBER_OF_STATES} Guess the State", prompt="What's another state's name?")
-    capitalized_answer = answer_state.title()
-    return capitalized_answer
+    answer_state = screen.textinput(title=f"{len(guesses)} / {NUMBER_OF_STATES} Guess the State",
+                                    prompt="What's another state's name?").title().strip()
+    return answer_state
 
 
-states_data = pandas.read_csv("50_states.csv")
-LIST_OF_STATES = states_data.state.to_list()
+def check_answer(state):
+    if state in LIST_OF_STATES:
+        tim.penup()
+        state_row = states_data[states_data.state == state]
+        tim.goto(int(state_row.x), int(state_row.y))
+        tim.write(state)
+        guesses.append(state)
 
 
-def check_answer(u_answer):
-    for state in LIST_OF_STATES:
-        if u_answer == state:
-            write_state(u_answer)
-            guesses.append(u_answer)
+while len(guesses) < 50:
+    answer = user_answer()
+    if answer == "Exit":
+        missing_states = []
+        for state in LIST_OF_STATES:
+            if state not in guesses:
+                missing_states.append(state)
+        new_data = pandas.DataFrame(missing_states)
+        new_data.to_csv("states_to_learn.csv")
+        break
+    check_answer(answer)
 
 
-def write_state(state):
-    tim.penup()
-    state_row = states_data[states_data.state == state]
-    x_cor = int(state_row.x)
-    y_cor = int(state_row.y)
-    tim.goto(x_cor, y_cor)
-    tim.write(f"{state}", )
-
-
-game_is_on = True
-while game_is_on:
-    check_answer(user_answer())
